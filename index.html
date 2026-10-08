@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coraline: the Book Club Quest (Chapters 1–4)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fondamento:ital@0;1&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root { --stitch: #f2c21a; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+    font-size: 18px; line-height: 1.6;
+    color: var(--fg);
+    background: var(--bg);
+    background-attachment: fixed;
+    transition: color .6s;
+  }
+  body.real  { --fg:#f6f0e0; --bg: linear-gradient(180deg,#86a3a8 0%,#46606a 55%,#2b3e46 100%); --panel:rgba(20,32,38,.55); --accent:#f2c21a; --good:#8ff0cf; --bad:#ffa08f; --line:#f2c21a; }
+  body.other { --fg:#fff0df; --bg: radial-gradient(ellipse at 50% -10%,#5a2a96 0%,#26104a 50%,#0f0724 100%); --panel:rgba(18,6,44,.6); --accent:#ff9a3d; --good:#3de6cf; --bad:#ff7096; --line:#ff9a3d; }
+
+  .wrap { max-width: 780px; margin: 0 auto; padding: 22px 16px 60px; }
+  h1, h2, h3 { font-family: 'Fondamento', 'Lora', cursive; font-weight: 400; margin: 0; }
+
+  /* ---------- Title screen ---------- */
+  #title { text-align: center; padding-top: 4vh; }
+  #title h1 { font-size: clamp(56px, 13vw, 110px); line-height: 1; letter-spacing: .02em; color: #f2c21a; text-shadow: 3px 4px 0 #1d2a5c, 0 0 28px #2f6fd666; transform: rotate(-2deg); }
+  #title .sub { font-family: 'Fondamento', cursive; font-size: clamp(20px, 4.5vw, 28px); margin: 14px 0 6px; }
+  #title p { max-width: 520px; margin: 10px auto; opacity: .92; }
+  .door-art { width: 190px; margin: 6px auto 0; display: block; }
+  .door-glow { animation: glow 3.2s steps(8) infinite alternate; }
+  @keyframes glow { from { opacity: .55; } to { opacity: 1; } }
+
+  .go {
+    font-family: 'Fondamento', cursive; font-size: 24px; color: #1a1408;
+    background: var(--accent, #f2c21a);
+    border: 3px dashed #1a1408; outline: 4px solid var(--accent, #f2c21a); outline-offset: 0;
+    padding: 12px 30px; margin-top: 22px; border-radius: 40px; cursor: pointer;
+    transition: transform .15s;
+  }
+  .go:hover { transform: rotate(-2deg) scale(1.04); }
+  .go:focus-visible, .opt:focus-visible { outline: 4px solid #fff; outline-offset: 3px; }
+
+  /* ---------- Progress buttons ---------- */
+  #dots { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 6px 0 14px; }
+  .dot { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--fg); display: grid; place-items: center; font-size: 14px; font-weight: 600; opacity: .55; position: relative; transition: all .3s; }
+  .dot::before, .dot::after { content: ""; position: absolute; width: 3px; height: 3px; background: currentColor; border-radius: 50%; top: 9px; }
+  .dot::before { left: 8px; } .dot::after { right: 8px; }
+  .dot.now { opacity: 1; border-color: var(--accent); box-shadow: 0 0 12px var(--accent); transform: scale(1.15); }
+  .dot.ok  { opacity: 1; background: var(--good); border-color: var(--good); color: #0b2b25; }
+  .dot.no  { opacity: 1; background: var(--bad);  border-color: var(--bad);  color: #3b0d14; }
+  .dot.ok::before, .dot.ok::after, .dot.no::before, .dot.no::after { display: none; }
+
+  /* ---------- Scene ---------- */
+  .stage { animation: fadein .5s ease both; }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+  .frame {
+    border: 4px dashed var(--line); border-radius: 18px; padding: 8px;
+    background: var(--panel); position: relative; overflow: hidden;
+    box-shadow: 0 10px 30px #0006;
+  }
+  .frame svg { display: block; width: 100%; height: auto; border-radius: 10px; }
+  .place { font-family: 'Fondamento', cursive; font-size: 22px; margin: 16px 2px 4px; color: var(--accent); }
+  .narr { margin: 0 2px 14px; }
+  .question { font-family: 'Fondamento', cursive; font-size: 26px; line-height: 1.25; margin: 6px 2px 14px; }
+
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .opts { grid-template-columns: 1fr; } }
+  .opt {
+    text-align: left; font: inherit; color: var(--fg); cursor: pointer;
+    background: var(--panel); border: 3px dashed var(--line); border-radius: 16px;
+    padding: 16px 16px 16px 62px; position: relative; min-height: 96px;
+    transition: transform .15s, background .2s, border-color .2s;
+  }
+  .opt:hover:not(:disabled) { transform: rotate(-1deg) translateY(-2px); background: #ffffff1c; }
+  .opt .sew { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; background: #111; border: 3px solid #555; }
+  .opt .sew::before, .opt .sew::after { content: ""; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #777; top: 11px; }
+  .opt .sew::before { left: 8px; } .opt .sew::after { right: 8px; }
+  .opt:disabled { cursor: default; }
+  .opt.correct { border-style: solid; border-color: var(--good); background: color-mix(in srgb, var(--good) 22%, transparent); }
+  .opt.wrong   { border-style: solid; border-color: var(--bad);  background: color-mix(in srgb, var(--bad) 18%, transparent); animation: shake .4s; }
+  .opt.faded { opacity: .55; }
+  @keyframes shake { 25% { transform: translateX(-6px) rotate(-1deg); } 75% { transform: translateX(6px) rotate(1deg); } }
+
+  .reveal { margin-top: 18px; padding: 16px 18px; border-radius: 16px; border-left: 8px solid var(--good); background: var(--panel); animation: fadein .4s ease both; }
+  .reveal.bad { border-left-color: var(--bad); }
+  .reveal h3 { font-size: 26px; margin-bottom: 4px; }
+  .reveal.good h3 { color: var(--good); } .reveal.bad h3 { color: var(--bad); }
+  .reveal p { margin: 4px 0 0; }
+  .reveal .go { font-size: 20px; padding: 9px 24px; margin-top: 14px; }
+
+  /* ---------- End ---------- */
+  #end { text-align: center; }
+  #end h2 { font-size: clamp(38px, 9vw, 64px); color: var(--accent); line-height: 1.1; margin: 12px 0; }
+  .score { display: flex; justify-content: center; gap: 18px; margin: 20px 0; flex-wrap: wrap; }
+  .score div { min-width: 150px; padding: 14px 20px; border-radius: 18px; background: var(--panel); border: 3px dashed var(--line); }
+  .score b { display: block; font-family: 'Fondamento', cursive; font-size: 56px; line-height: 1; font-weight: 400; }
+  .score .g b { color: var(--good); } .score .r b { color: var(--bad); }
+  #missed { max-width: 560px; margin: 16px auto; text-align: left; }
+  #missed h3 { font-size: 24px; margin-bottom: 6px; }
+  #missed ul { margin: 0; padding-left: 22px; }
+
+  /* ---------- SVG bits ---------- */
+  .rain line { stroke: #dff2f7; stroke-width: 1.4; opacity: .5; animation: fall .7s linear infinite; }
+  @keyframes fall { from { transform: translateY(-30px); } to { transform: translateY(240px); } }
+  .tw { animation: tw 2.4s steps(3) infinite; }
+  .tw:nth-child(2n) { animation-delay: .7s; } .tw:nth-child(3n) { animation-delay: 1.4s; }
+  @keyframes tw { 0%,100% { opacity: .2; } 50% { opacity: 1; } }
+  .steam { animation: steam 2.4s steps(6) infinite; }
+  @keyframes steam { from { transform: translateY(0); opacity: .8; } to { transform: translateY(-16px); opacity: 0; } }
+  .bob { animation: bob 2.6s steps(4) infinite; }
+  @keyframes bob { 50% { transform: translateY(-4px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body class="real">
+
+<!-- hand-made "boiling" wobble, a nod to stop-motion -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="wobble" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence id="turb" type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="2"/>
+    <feDisplacementMap in="SourceGraphic" scale="3.2"/>
+  </filter>
+</svg>
+
+<div class="wrap">
+  <main id="app"></main>
+</div>
+
+<script>
+/* ==========================================================
+   THE QUESTIONS — edit freely.
+   The first option is ALWAYS the correct one; the game
+   shuffles the order on screen for each player.
+   ========================================================== */
+const SCENES = [
+  {
+    world: 'real', art: 'names', place: 'The old pink house',
+    narr: "Coraline and her parents have just moved into a flat in an enormous, very old house. She keeps bumping into the neighbours: two retired actresses downstairs and an old man with a moustache upstairs. They all greet her the same way.",
+    q: "What do the neighbours keep calling her?",
+    opts: ["Caroline", "Cora"],
+    truth: "All three neighbours get her name wrong and call her Caroline. Coraline has to correct them every time."
+  },
+  {
+    world: 'real', art: 'well', place: 'The overgrown garden',
+    narr: "Beyond the garden lies an old well, covered with wooden planks. Everyone has told Coraline to keep away from it, and of course she is curious.",
+    q: "What does Coraline do at the well?",
+    opts: ["Drops pebbles through a knothole in the planks and listens for the splash far below", "Lowers a bucket on a rope and pulls up something strange"],
+    truth: "She drops pebbles through a knothole in the planks and listens for the splash. It takes a long time, because the well is very deep."
+  },
+  {
+    world: 'real', art: 'parents', place: 'The flat, a rainy day',
+    narr: "It is pouring, so Coraline cannot explore outside. The television is boring. She wanders the flat looking for someone to spend time with. Both of her parents are at home.",
+    q: "What are her parents doing?",
+    opts: ["Working, each in their own study, too busy to play with her", "Baking together in the kitchen and inviting her to help"],
+    truth: "Both parents work from home and each has their own study. They are far too busy for her, so Coraline is left to find something to do by herself."
+  },
+  {
+    world: 'real', art: 'count', place: 'Every room in the flat',
+    narr: "Left to her own devices, Coraline decides to explore the flat and count everything she can find.",
+    q: "What does her count come to?",
+    opts: ["21 windows and 14 doors", "14 windows and 21 doors"],
+    truth: "She counts 21 windows and 14 doors. Thirteen of the doors open and close as they should. The fourteenth is locked."
+  },
+  {
+    world: 'real', art: 'brick', place: 'The drawing room',
+    narr: "The locked door is in the drawing room. Coraline asks her mother where it leads, and her mother finds the key and unlocks it, just to show her.",
+    q: "What is on the other side?",
+    opts: ["A solid wall of bricks", "A dark, empty corridor"],
+    truth: "The door has been bricked up. There is nothing behind it but a wall, and Coraline's mother finds the whole thing rather dull."
+  },
+  {
+    world: 'real', art: 'dinner', place: 'The kitchen, dinnertime',
+    narr: "That evening, Coraline's father serves up one of his fancy home-made \"recipes\", as he does most nights.",
+    q: "How does Coraline react to dinner?",
+    opts: ["She refuses to try it and heats up a microwave pizza instead", "She eats every bite and asks for seconds"],
+    truth: "She turns up her nose at her father's latest recipe and has a microwave pizza. Her father's cooking is famously experimental."
+  },
+  {
+    world: 'real', art: 'mice', place: 'The yard, in the fog',
+    narr: "The rain has stopped, but a thick white fog has settled over the house. Coraline wanders out into it and bumps into the old man from upstairs. He says his mice have a message for her, and he still believes her name is Caroline.",
+    q: "What is odd about the mice's message?",
+    opts: ["The mice call her Coraline, her real name, and warn her not to go through the door", "The mice call her Caroline too, and warn her to stay away from the well"],
+    truth: "The message is: don't go through the door. Oddly, the mice use her correct name, Coraline, even though the old man passing it on still thinks she is Caroline."
+  },
+  {
+    world: 'real', art: 'tea', place: 'Miss Spink and Miss Forcible\u2019s flat',
+    narr: "On a foggy day Coraline visits the old actresses downstairs. Over tea, Miss Spink offers to read her tea leaves.",
+    q: "What does Miss Spink see, and what does she give Coraline?",
+    opts: ["Terrible danger ahead, and a small stone with a hole in it to carry as a charm", "A fortune on the way, and a little silver key"],
+    truth: "Miss Spink sees that Coraline is in danger. She gives her a stone with a hole through it to keep as a talisman."
+  },
+  {
+    world: 'real', art: 'shop', place: 'The department store in town',
+    narr: "The next day is sunny, and Coraline's mother takes her to the nearest big town to buy clothes for the new school year. In the shop, Coraline spots something she simply has to have.",
+    q: "What does Coraline beg for, and how does her mother respond?",
+    opts: ["Day-Glo green gloves; her mother ignores her and buys plain grey and navy school clothes", "Day-Glo green gloves; her mother buys them as a treat for being patient"],
+    truth: "Coraline argues that nobody else at school has green gloves, so she would stand out. Her mother ignores her, keeps talking to the shop assistant, and buys grey blouses, a dark grey skirt, navy underpants and white socks."
+  },
+  {
+    world: 'other', art: 'tunnel', place: 'Through the door',
+    narr: "Her mother has gone out for groceries. Home alone, Coraline unlocks the door again, and this time the bricks are gone. She crosses a long dark passage and steps into a flat that looks just like her own.",
+    q: "Who is waiting for her there?",
+    opts: ["A woman who calls herself Coraline\u2019s other mother, with black buttons for eyes", "Her real mother, who followed her in and is furious"],
+    truth: "Her \"other mother\" is waiting, and she has black buttons where her eyes should be. She sends Coraline to fetch the other father, who has button eyes too."
+  },
+  {
+    world: 'other', art: 'rats', place: 'Coraline\u2019s other bedroom',
+    narr: "After a wonderful meal, the other parents send Coraline off to play in her other bedroom. Something is not right there.",
+    q: "What does she find under the bed?",
+    opts: ["A pack of rats that sing her an eerie song", "A tiny circus of performing mice"],
+    truth: "Rats live under the bed in the other world, and they sing her an ominous song. The mouse circus belongs to the old man upstairs, back in the real world."
+  },
+  {
+    world: 'other', art: 'collector', place: 'Coraline\u2019s other bedroom, a little later',
+    narr: "Coraline is still in her other bedroom, watching the rats, when they suddenly scramble away in a panic. Someone has appeared in the doorway to collect them.",
+    q: "Who comes for the rats?",
+    opts: ["The other crazy old man from upstairs, who invites her up to see his flat", "The other father, who tells her it is time for dessert"],
+    truth: "It is the other version of the old man from upstairs. The rats swarm up his clothes and he invites Coraline to come up, but she feels uneasy and says no."
+  },
+  {
+    world: 'other', art: 'wall', place: 'The garden wall',
+    narr: "Coraline slips outside into the garden of the other world. She hears something behind her and turns around: the black cat from home is sitting on the garden wall. She assumes it must be the \"other\" cat.",
+    q: "What does the cat tell her?",
+    opts: ["It is the very same cat from home, because cats keep themselves together, unlike people", "It is the other world's copy, made by the other mother to keep an eye on her"],
+    truth: "The cat insists that it is the same cat from her own home. Unlike people, it says, cats keep themselves together, so there is no \"other\" version of a cat. It can talk here, too."
+  },
+  {
+    world: 'other', art: 'cat', place: 'The garden, after dark',
+    narr: "Coraline keeps asking questions: where is she, what is she doing here, and who are her other parents really?",
+    q: "How does the cat answer?",
+    opts: ["It gives no real answers and darts off into the woods", "It explains everything, then leads her home"],
+    truth: "The cat stays vague, gives her no real answers and bolts into the woods. Coraline decides to go and see the other Miss Spink and Miss Forcible."
+  },
+  {
+    world: 'other', art: 'theater', place: 'The downstairs flat, the other side',
+    narr: "Coraline walks into the flat where the real Miss Spink and Miss Forcible live. It has been completely transformed.",
+    q: "What is going on inside?",
+    opts: ["A huge theatre where the two women look young and glamorous and perform for an audience of dogs", "A huge theatre where the two women look young and glamorous and perform for an audience of rats"],
+    truth: "The flat has become a cavernous theatre. The other Miss Spink and Miss Forcible perform scenes on stage for an audience of dogs, who applaud."
+  }
+];
+
+/* ==========================================================
+   ILLUSTRATIONS (original SVG, hand-drawn look)
+   ========================================================== */
+const DEFS = `<defs>
+  <linearGradient id="gR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9c0c4"/><stop offset="1" stop-color="#5f7d84"/></linearGradient>
+  <linearGradient id="gD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7d95a0"/><stop offset="1" stop-color="#3c4f58"/></linearGradient>
+  <linearGradient id="gN" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d1056"/><stop offset="1" stop-color="#0d0522"/></linearGradient>
+  <linearGradient id="gW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a2a8f"/><stop offset="1" stop-color="#1c0b3a"/></linearGradient>
+</defs>`;
+
+const mouthDefault = 'M-4 13 Q0 16 4 13';
+const mouthFlat = 'M-4 14 L4 14';
+
+const cor = (x, feet, s = 1, mouth = mouthDefault) => {
+  const y = feet - 92 * s;
+  return `<g transform="translate(${x} ${y}) scale(${s})">
+  <ellipse cx="0" cy="92" rx="24" ry="4" fill="#0005"/>
+  <rect x="-10" y="62" width="7" height="26" fill="#e9cfb8"/><rect x="3" y="62" width="7" height="26" fill="#e9cfb8"/>
+  <rect x="-14" y="83" width="13" height="9" rx="3" fill="#26263f"/><rect x="1" y="83" width="13" height="9" rx="3" fill="#26263f"/>
+  <path d="M-22 66 L-14 26 Q0 20 14 26 L22 66 Z" fill="#f2c21a"/>
+  <path d="M-14 26 Q0 34 14 26" stroke="#b98d08" stroke-width="2" fill="none"/>
+  <path d="M-20 34 Q-30 50 -24 62" stroke="#f2c21a" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M20 34 Q30 50 24 62" stroke="#f2c21a" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <rect x="-4" y="18" width="8" height="10" fill="#f3d9c3"/>
+  <circle cx="0" cy="4" r="17" fill="#f6dfca"/>
+  <path d="M-19 6 Q-22 -19 0 -19 Q22 -19 19 6 Q15 -5 5 -9 Q-7 -3 -19 6Z" fill="#2f6fd6"/>
+  <path d="M-19 2 Q-23 18 -15 24 Q-14 12 -16 2Z" fill="#2f6fd6"/><path d="M19 2 Q23 18 15 24 Q14 12 16 2Z" fill="#2f6fd6"/>
+  <circle cx="-6" cy="6" r="2.2" fill="#1b1b2b"/><circle cx="6" cy="6" r="2.2" fill="#1b1b2b"/>
+  <path d="${mouth}" stroke="#a24a4a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  </g>`;
+};
+
+const lady = (x, feet, c, hair = '#d8d8dc') => `<g transform="translate(${x} ${feet})">
+  <ellipse cx="0" cy="2" rx="26" ry="4" fill="#0004"/>
+  <ellipse cx="0" cy="-30" rx="25" ry="30" fill="${c}"/>
+  <circle cx="0" cy="-70" r="14" fill="#f1d3bd"/>
+  <path d="M-15 -72 Q0 -94 15 -72 Q10 -80 0 -80 Q-10 -80 -15 -72Z" fill="${hair}"/>
+  <circle cx="-5" cy="-70" r="1.6" fill="#222"/><circle cx="5" cy="-70" r="1.6" fill="#222"/>
+  <path d="M-5 -63 Q0 -59 5 -63" stroke="#a24a4a" stroke-width="1.5" fill="none"/>
+  <circle cx="0" cy="-38" r="3" fill="#fff8"/>
+</g>`;
+
+const mum = (x, feet) => `<g transform="translate(${x} ${feet})">
+  <ellipse cx="0" cy="2" rx="22" ry="4" fill="#0004"/>
+  <rect x="-8" y="-40" width="6" height="40" fill="#e9cfb8"/><rect x="2" y="-40" width="6" height="40" fill="#e9cfb8"/>
+  <path d="M-18 -40 L-12 -95 Q0 -100 12 -95 L18 -40Z" fill="#5b8a6b"/>
+  <circle cx="0" cy="-110" r="14" fill="#f3d9c3"/>
+  <path d="M-16 -108 Q-18 -132 0 -130 Q18 -132 16 -108 Q12 -120 0 -120 Q-12 -120 -16 -108Z" fill="#5a3a24"/>
+  <circle cx="-5" cy="-109" r="1.6" fill="#222"/><circle cx="5" cy="-109" r="1.6" fill="#222"/>
+  <path d="M-4 -102 Q0 -99 4 -102" stroke="#a24a4a" stroke-width="1.5" fill="none"/>
+</g>`;
+
+const dad = (x, feet) => `<g transform="translate(${x} ${feet})">
+  <ellipse cx="0" cy="2" rx="22" ry="4" fill="#0004"/>
+  <rect x="-9" y="-40" width="7" height="40" fill="#4a4e6a"/><rect x="2" y="-40" width="7" height="40" fill="#4a4e6a"/>
+  <path d="M-19 -40 L-13 -95 Q0 -100 13 -95 L19 -40Z" fill="#8c6a4a"/>
+  <path d="M-12 -92 L12 -92 L14 -50 L-14 -50Z" fill="#efe6d2"/>
+  <circle cx="0" cy="-110" r="14" fill="#f3d9c3"/>
+  <path d="M-10 -122 Q0 -132 10 -122" stroke="#4a3020" stroke-width="4" fill="none"/>
+  <circle cx="-5" cy="-110" r="4" fill="none" stroke="#222" stroke-width="1.4"/><circle cx="5" cy="-110" r="4" fill="none" stroke="#222" stroke-width="1.4"/>
+  <path d="M-4 -102 Q0 -99 4 -102" stroke="#a24a4a" stroke-width="1.5" fill="none"/>
+</g>`;
+
+const rain = (n = 26) => {
+  let s = '<g class="rain">';
+  for (let i = 0; i < n; i++) {
+    const x = (i * 53) % 400, d = ((i * 37) % 70) / 100;
+    s += `<line x1="${x}" y1="-20" x2="${x - 6}" y2="0" style="animation-delay:-${d}s"/>`;
+  }
+  return s + '</g>';
+};
+const sparks = (n = 16) => {
+  let s = '<g>';
+  for (let i = 0; i < n; i++) {
+    const x = (i * 97 + 20) % 400, y = (i * 61 + 10) % 150, r = 1 + (i % 3) * .7;
+    s += `<circle class="tw" cx="${x}" cy="${y}" r="${r}" fill="${i % 2 ? '#ffd27a' : '#6ff2e0'}"/>`;
+  }
+  return s + '</g>';
+};
+const bubble = (x, y, w, txt) => `<g><ellipse cx="${x}" cy="${y}" rx="${w}" ry="17" fill="#fff" stroke="#222" stroke-width="2"/>
+  <text x="${x}" y="${y + 5}" text-anchor="middle" font-family="Fondamento, cursive" font-size="15" fill="#222">${txt}</text></g>`;
+
+const ART = {
+  mice: () => `<rect width="400" height="240" fill="#cdd6d4"/>
+    <rect x="18" y="36" width="120" height="150" fill="#b3bdbb"/><polygon points="8,38 78,4 148,38" fill="#a0aaa8"/>
+    ${[[34,56],[84,56],[34,110],[84,110]].map(p => `<rect x="${p[0]}" y="${p[1]}" width="28" height="36" fill="#c7d0ce" stroke="#9aa5a3" stroke-width="3"/>`).join('')}
+    <rect y="178" width="400" height="62" fill="#9db0a3"/>
+    <g transform="translate(300 196)">
+      <ellipse cx="0" cy="2" rx="26" ry="4" fill="#0004"/>
+      <rect x="-10" y="-46" width="8" height="46" fill="#3c3a4a"/><rect x="2" y="-46" width="8" height="46" fill="#3c3a4a"/>
+      <path d="M-24 -46 L-16 -100 Q0 -108 16 -100 L24 -46Z" fill="#6a5644"/>
+      <circle cx="0" cy="-116" r="15" fill="#f0d2b8"/>
+      <path d="M-16 -120 Q-22 -140 -8 -134 Q0 -146 8 -134 Q22 -140 16 -120Z" fill="#cfcfcf"/>
+      <circle cx="-5" cy="-117" r="1.8" fill="#222"/><circle cx="5" cy="-117" r="1.8" fill="#222"/>
+      <path d="M-18 -110 Q-9 -100 0 -108 Q9 -100 18 -110 Q9 -95 0 -101 Q-9 -95 -18 -110Z" fill="#9a9a9a"/>
+      <path d="M-22 -74 Q-36 -58 -30 -48" stroke="#6a5644" stroke-width="8" fill="none" stroke-linecap="round"/>
+    </g>
+    ${[[250,192],[228,196],[206,190]].map((p, n) => `<g transform="translate(${p[0]} ${p[1]})"><ellipse cx="0" cy="-5" rx="9" ry="6" fill="#8d8b94"/><circle cx="8" cy="-8" r="4" fill="#8d8b94"/><circle cx="8" cy="-12" r="2.5" fill="#a5a3ad"/><path d="M-9 -5 q-10 0 -12 -8" stroke="#a5a3ad" stroke-width="1.5" fill="none"/>${n === 0 ? '<path d="M12 -8 l8 -6 M16 -16 l-3 6" stroke="#d3a84a" stroke-width="2"/>' : ''}</g>`).join('')}
+    ${cor(95, 200, 1)}
+    <g fill="#fff" opacity=".55"><ellipse cx="80" cy="190" rx="110" ry="14"/><ellipse cx="330" cy="205" rx="120" ry="12"/><ellipse cx="200" cy="60" rx="130" ry="16"/></g>`,
+
+  shop: () => `<rect width="400" height="240" fill="#d9d1c0"/>
+    <rect y="180" width="400" height="60" fill="#8f8777"/>
+    ${Array.from({length: 10}, (_, i) => `<rect x="${i*40}" y="180" width="20" height="60" fill="#7d7565" opacity=".5"/>`).join('')}
+    <rect x="150" y="60" width="130" height="5" fill="#555"/><rect x="156" y="62" width="4" height="118" fill="#555"/><rect x="270" y="62" width="4" height="118" fill="#555"/>
+    ${[0,1,2,3,4,5].map(n => `<path d="M${165+n*19} 64 l-7 10 h14z" fill="none" stroke="#333" stroke-width="1.5"/><rect x="${158+n*19}" y="74" width="14" height="${46+(n%3)*8}" fill="${n%2 ? '#56607a' : '#8e9199'}"/>`).join('')}
+    ${lady(345, 200, '#6a8aa8', '#6a4a30')}
+    ${mum(250, 204)}
+    ${cor(75, 204, 1, 'M-4 15 Q0 11 4 15')}
+    <path d="M85 -2" stroke="none"/>`,
+
+  collector: () => `<rect width="400" height="240" fill="url(#gW)"/>${sparks(8)}
+    <rect y="190" width="400" height="50" fill="#2a1446"/>
+    <rect x="290" y="44" width="80" height="146" rx="4" fill="#ffb56b" class="door-glow"/>
+    <rect x="290" y="44" width="80" height="146" rx="4" fill="none" stroke="#7a3e1f" stroke-width="7"/>
+    <path d="M330 190 L330 120 Q318 118 318 100 Q318 76 330 70 Q342 76 342 100 Q342 118 330 120Z" fill="#170a2c"/>
+    <path d="M322 130 Q300 150 296 190 M338 130 Q360 150 364 190" stroke="#170a2c" stroke-width="12" fill="none"/>
+    ${[[240,200],[205,205],[170,198],[130,204],[255,214],[215,220]].map(p => `<g transform="translate(${p[0]} ${p[1]})"><ellipse cx="0" cy="-5" rx="11" ry="6" fill="#2b2233"/><circle cx="10" cy="-7" r="4.5" fill="#2b2233"/><circle cx="12" cy="-9" r="1.2" fill="#ff5a6a"/><path d="M-11 -5 q-12 2 -16 -8" stroke="#4a3a56" stroke-width="1.6" fill="none"/></g>`).join('')}
+    ${cor(70, 200, 1, 'M-4 15 Q0 11 4 15')}`,
+
+  wall: () => `<rect width="400" height="240" fill="url(#gN)"/>${sparks(18)}
+    <circle cx="60" cy="42" r="22" fill="#ffe9b0"/>
+    <rect x="240" y="30" width="140" height="130" fill="#b87a86"/><polygon points="230,32 310,0 390,32" fill="#6b3f52"/>
+    ${[[252,46],[292,46],[332,46],[252,96],[332,96]].map((p, n) => `<rect class="tw" x="${p[0]}" y="${p[1]}" width="26" height="34" fill="${n % 2 ? '#6ff2e0' : '#ffd27a'}" stroke="#6b3f52" stroke-width="3"/>`).join('')}
+    <rect y="186" width="400" height="54" fill="#1b0f33"/>
+    <rect x="0" y="146" width="400" height="44" fill="#6d6a7c"/>
+    ${Array.from({length: 9}, (_, i) => `<path d="M${i*46} 146 v44 M${i*46-22} 168 h46" stroke="#4a4758" stroke-width="2.5"/>`).join('')}
+    <rect x="0" y="140" width="400" height="10" fill="#8a879c"/>
+    <g transform="translate(150 142)">
+      <path d="M-30 -8 Q-58 -8 -52 -40 Q-50 -48 -44 -42" stroke="#0a0614" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <ellipse cx="0" cy="-22" rx="28" ry="24" fill="#0a0614"/>
+      <circle cx="18" cy="-52" r="17" fill="#0a0614"/>
+      <polygon points="6,-64 8,-82 18,-66" fill="#0a0614"/><polygon points="30,-64 28,-82 18,-66" fill="#0a0614"/>
+      <ellipse cx="12" cy="-54" rx="3" ry="4.5" fill="#ffe15a"/><ellipse cx="25" cy="-54" rx="3" ry="4.5" fill="#ffe15a"/>
+    </g>
+    ${cor(300, 232, .95)}`,
+
+  theater: () => `<rect width="400" height="240" fill="#1d0a1f"/>
+    <rect x="70" y="40" width="260" height="130" fill="#3a1025"/>
+    <path d="M60 30 Q200 70 340 30 L340 40 Q200 80 60 40Z" fill="#8a1c33"/>
+    <path d="M60 30 Q90 100 60 200 L112 200 Q130 100 100 40Z" fill="#a8233f"/><path d="M340 30 Q310 100 340 200 L288 200 Q270 100 300 40Z" fill="#a8233f"/>
+    <rect x="60" y="170" width="280" height="30" fill="#7a4a2a"/><rect x="60" y="170" width="280" height="6" fill="#a8703f"/>
+    <g fill="#ffd27a">${Array.from({length: 13}, (_, i) => `<circle class="tw" cx="${75+i*20}" cy="${40 + Math.sin(i/12*Math.PI)*22}" r="4"/>`).join('')}</g>
+    <polygon points="170,44 130,170 210,170" fill="#fff6d0" opacity=".16"/><polygon points="240,44 200,170 280,170" fill="#ffe0f0" opacity=".16"/>
+    <rect y="200" width="400" height="40" fill="#120512"/>
+    ${cor(200, 236, .62)}`,
+
+  names: () => `<rect width="400" height="240" fill="url(#gR)"/>
+    <rect y="190" width="400" height="50" fill="#476450"/>
+    <rect x="135" y="50" width="150" height="140" fill="#b68c92"/>
+    <polygon points="122,52 210,8 298,52" fill="#5b3f48"/>
+    ${[[150,70],[205,70],[250,70],[150,120],[250,120]].map(p => `<rect x="${p[0]}" y="${p[1]}" width="26" height="34" fill="#f5dc8d" stroke="#5b3f48" stroke-width="3"/>`).join('')}
+    <rect x="190" y="132" width="32" height="58" rx="3" fill="#4a2f36"/><circle cx="216" cy="162" r="2.5" fill="#f2c21a"/>
+    ${lady(45, 192, '#c86a9a')}${lady(92, 192, '#8a78c4')}
+    ${bubble(70, 82, 38, 'Hello, dear!')}
+    ${cor(345, 196, 1, mouthFlat)}${bubble(338, 50, 26, '…')}${rain(14)}`,
+
+  well: () => `<rect width="400" height="240" fill="url(#gD)"/>
+    <g fill="#23372d"><circle cx="40" cy="80" r="48"/><circle cx="110" cy="60" r="42"/><circle cx="330" cy="70" r="50"/><circle cx="385" cy="110" r="40"/></g>
+    <rect y="185" width="400" height="55" fill="#3d5a43"/>
+    <rect x="145" y="140" width="110" height="46" fill="#85847c"/>
+    <path d="M145 158 h110 M145 172 h110 M180 140 v18 M222 158 v14 M170 172 v14" stroke="#5c5b55" stroke-width="2"/>
+    <ellipse cx="200" cy="186" rx="55" ry="12" fill="#6e6d66"/>
+    <ellipse cx="200" cy="140" rx="55" ry="13" fill="#9b9a91"/>
+    <ellipse cx="200" cy="140" rx="49" ry="10" fill="#70502f"/>
+    <path d="M158 137 h84 M162 143 h76 M170 133 h60" stroke="#47311c" stroke-width="2"/>
+    <ellipse cx="214" cy="141" rx="5" ry="2.4" fill="#0b0b0b"/>
+    ${cor(310, 196, .95)}
+    <g transform="translate(70 196)"><ellipse cx="0" cy="-10" rx="16" ry="11" fill="#151515"/><path d="M-12 -17 L-14 -30 L-6 -20Z M12 -17 L14 -30 L6 -20Z" fill="#151515"/><circle cx="-6" cy="-12" r="2" fill="#f2d21a"/><circle cx="6" cy="-12" r="2" fill="#f2d21a"/></g>`,
+
+  parents: () => `<rect width="400" height="240" fill="#8d8474"/>
+    <rect y="185" width="400" height="55" fill="#5e5245"/>
+    <rect x="160" y="22" width="80" height="100" fill="#9fc1cb" stroke="#4a3f33" stroke-width="6"/>
+    <path d="M200 22 v100 M160 72 h80" stroke="#4a3f33" stroke-width="4"/>
+    <g clip-path="inset(22px 160px 118px 160px)">${rain(10)}</g>
+    <g>
+      <rect x="40" y="50" width="62" height="135" rx="3" fill="#5a4432" stroke="#2f2218" stroke-width="3"/><circle cx="92" cy="122" r="3.5" fill="#f2c21a"/>
+      <rect x="44" y="180" width="54" height="5" fill="#ffe28a" class="tw"/>
+      <rect x="298" y="50" width="62" height="135" rx="3" fill="#5a4432" stroke="#2f2218" stroke-width="3"/><circle cx="308" cy="122" r="3.5" fill="#f2c21a"/>
+      <rect x="302" y="180" width="54" height="5" fill="#ffe28a" class="tw"/>
+    </g>
+    ${cor(200, 222, 1, mouthFlat)}
+    <rect x="180" y="215" width="40" height="3" fill="none"/>`,
+
+  count: () => `<rect width="400" height="240" fill="#8a7f70"/>
+    <rect y="170" width="400" height="70" fill="#5b4e40"/>
+    ${[20,95,170,245].map(x => `<rect x="${x}" y="50" width="56" height="122" rx="3" fill="#6a4d37" stroke="#34261a" stroke-width="3"/><circle cx="${x+46}" cy="115" r="3.5" fill="#f2c21a"/>`).join('')}
+    <rect x="320" y="50" width="56" height="122" rx="3" fill="#2e211a" stroke="#120c08" stroke-width="3"/>
+    <circle cx="366" cy="115" r="3.5" fill="#777"/><circle cx="348" cy="98" r="6" fill="#0c0706"/><rect x="346" y="100" width="4" height="9" fill="#0c0706"/>
+    <rect x="130" y="60" width="22" height="22" fill="#9fc1cb" stroke="#34261a" stroke-width="2"/>
+    ${cor(72, 232, .95, mouthFlat)}
+    <g transform="translate(103 196) rotate(-12)"><rect width="22" height="28" fill="#fffbe8" stroke="#333" stroke-width="2"/><path d="M4 7 h14 M4 13 h14 M4 19 h9" stroke="#999" stroke-width="1.5"/></g>`,
+
+  brick: () => `<rect width="400" height="240" fill="#7f6d60"/>
+    ${Array.from({length: 10}, (_, i) => `<path d="M${i*44+10} 0 v190" stroke="#9a8576" stroke-width="10" opacity=".35"/>`).join('')}
+    <rect y="190" width="400" height="50" fill="#4d4036"/>
+    <rect x="160" y="42" width="84" height="150" rx="3" fill="#4a3123" stroke="#22150d" stroke-width="5"/>
+    <rect x="172" y="56" width="60" height="50" fill="none" stroke="#2b1b12" stroke-width="3"/><rect x="172" y="114" width="60" height="64" fill="none" stroke="#2b1b12" stroke-width="3"/>
+    <circle cx="230" cy="122" r="5" fill="#d8b043"/><ellipse cx="230" cy="136" rx="3" ry="5" fill="#0c0706"/>
+    ${cor(90, 200, 1)}${mum(325, 200)}
+    <g transform="translate(300 122) rotate(-25)"><circle cx="0" cy="0" r="9" fill="none" stroke="#1d1d22" stroke-width="5"/><rect x="8" y="-3" width="40" height="6" fill="#1d1d22"/><rect x="36" y="3" width="5" height="10" fill="#1d1d22"/><rect x="28" y="3" width="5" height="8" fill="#1d1d22"/></g>`,
+
+  dinner: () => `<rect width="400" height="240" fill="#c7b48a"/>
+    <rect y="175" width="400" height="65" fill="#7a6648"/>
+    <rect x="70" y="40" width="70" height="60" fill="#a9c7cf" stroke="#6a5a3a" stroke-width="4"/>
+    <ellipse cx="230" cy="178" rx="120" ry="14" fill="#6a2f3a"/>
+    <rect x="110" y="148" width="240" height="30" fill="#8a3b48"/>
+    <ellipse cx="230" cy="150" rx="120" ry="12" fill="#a54a58"/>
+    <ellipse cx="230" cy="150" rx="46" ry="9" fill="#d8d8d8"/>
+    <path d="M192 148 Q230 104 268 148Z" fill="#c9cdd2" stroke="#8a8e94" stroke-width="2"/><circle cx="230" cy="118" r="5" fill="#8a8e94"/>
+    <g class="steam" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"><path d="M215 108 q-6 -8 0 -16"/><path d="M245 108 q6 -8 0 -16"/></g>
+    ${cor(90, 210, 1, 'M-4 15 Q0 11 4 15')}${dad(330, 200)}`,
+
+  tea: () => `<rect width="400" height="240" fill="#5c4a66"/>
+    <g opacity=".5">${Array.from({length: 8}, (_, i) => `<circle cx="${20+i*52}" cy="${40+(i%2)*40}" r="10" fill="#b76a8a"/>`).join('')}</g>
+    <rect y="165" width="400" height="75" fill="#3d2e47"/>
+    <ellipse cx="200" cy="185" rx="170" ry="20" fill="#8a5a3a"/>
+    <rect x="30" y="165" width="340" height="20" fill="#9a683f"/><ellipse cx="200" cy="165" rx="170" ry="18" fill="#b0784a"/>
+    ${lady(62, 170, '#c86a9a')}${lady(338, 170, '#8a78c4')}
+    <g transform="translate(200 160)">
+      <ellipse cx="0" cy="8" rx="56" ry="11" fill="#e9e2d6"/>
+      <path d="M-44 -28 Q-44 14 0 14 Q44 14 44 -28Z" fill="#f4efe6" stroke="#b9ad96" stroke-width="2"/>
+      <ellipse cx="0" cy="-28" rx="44" ry="10" fill="#8a4a2a"/>
+      <path d="M44 -20 q24 -4 14 18 q-6 10 -18 6" fill="none" stroke="#f4efe6" stroke-width="7"/>
+      <g fill="#2a140a"><ellipse cx="-14" cy="-29" rx="4" ry="1.6" transform="rotate(20 -14 -29)"/><ellipse cx="6" cy="-27" rx="5" ry="1.8"/><ellipse cx="18" cy="-30" rx="3" ry="1.4" transform="rotate(-30 18 -30)"/><ellipse cx="-2" cy="-31" rx="3" ry="1.4"/></g>
+      <g class="steam" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"><path d="M-10 -40 q-6 -8 0 -16"/><path d="M12 -40 q6 -8 0 -16"/></g>
+    </g>`,
+
+  tunnel: () => `<rect width="400" height="240" fill="url(#gN)"/>${sparks(10)}
+    ${Array.from({length: 9}, (_, i) => { const k = i / 9, w = 380 - k * 330, h = 230 - k * 200; const c = `hsl(${270 - k*70} 70% ${12 + k*40}%)`; return `<rect x="${200 - w/2}" y="${120 - h/2}" width="${w}" height="${h}" rx="${40 - k*20}" fill="${c}" stroke="#0005" stroke-width="2"/>`; }).join('')}
+    <ellipse cx="200" cy="122" rx="26" ry="36" fill="#ffe8b0" class="door-glow"/>
+    <g class="bob">${[[70,60],[330,80],[110,160],[300,170]].map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="9" fill="#0d0d14" stroke="#6ff2e0" stroke-width="2"/><circle cx="${p[0]-3}" cy="${p[1]-2}" r="1.3" fill="#6ff2e0"/><circle cx="${p[0]+3}" cy="${p[1]-2}" r="1.3" fill="#6ff2e0"/>`).join('')}</g>
+    ${cor(200, 236, .62)}`,
+
+  rats: () => `<rect width="400" height="240" fill="url(#gW)"/>${sparks(12)}
+    <g opacity=".35" fill="#ff9a3d">${Array.from({length: 18}, (_, i) => `<circle cx="${(i*47)%400}" cy="${20+((i*31)%120)}" r="4"/>`).join('')}</g>
+    <rect y="190" width="400" height="50" fill="#2a1446"/>
+    <rect x="150" y="116" width="220" height="14" rx="4" fill="#7a3e1f"/>
+    <rect x="150" y="128" width="220" height="42" rx="6" fill="#ff8a3d"/>
+    <path d="M160 128 v42 M200 128 v42 M240 128 v42 M280 128 v42 M320 128 v42 M360 128 v42" stroke="#c9601c" stroke-width="3"/>
+    <rect x="150" y="76" width="14" height="114" fill="#7a3e1f"/><rect x="356" y="100" width="14" height="90" fill="#7a3e1f"/>
+    <rect x="166" y="170" width="190" height="20" fill="#05010d"/>
+    ${cor(80, 200, 1)}
+    <g fill="#ffd27a"><circle cx="340" cy="60" r="18"/></g><g fill="#2a1446"><circle cx="333" cy="56" r="15"/></g>`,
+
+  cat: () => `<rect width="400" height="240" fill="url(#gN)"/>${sparks(18)}
+    <circle cx="320" cy="48" r="26" fill="#ffe9b0"/><circle cx="310" cy="42" r="22" fill="#ebd49a" opacity=".5"/>
+    <g fill="#140a2a">${[[30,110,48],[95,95,55],[170,110,44],[250,100,50],[370,115,45]].map(t => `<polygon points="${t[0]-t[2]*.45},190 ${t[0]},${t[1]-55} ${t[0]+t[2]*.45},190"/>`).join('')}</g>
+    <rect y="188" width="400" height="52" fill="#1b0f33"/>
+    <g fill="#ffb347"><rect x="182" y="150" width="22" height="26"/><polygon points="176,150 193,132 210,150"/></g>
+    <g transform="translate(250 196)">
+      <path d="M-30 -8 Q-58 -8 -52 -40 Q-50 -48 -44 -42" stroke="#0a0614" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <ellipse cx="0" cy="-22" rx="28" ry="24" fill="#0a0614"/>
+      <circle cx="18" cy="-52" r="17" fill="#0a0614"/>
+      <polygon points="6,-64 8,-82 18,-66" fill="#0a0614"/><polygon points="30,-64 28,-82 18,-66" fill="#0a0614"/>
+      <ellipse cx="12" cy="-54" rx="3" ry="4.5" fill="#ffe15a"/><ellipse cx="25" cy="-54" rx="3" ry="4.5" fill="#ffe15a"/>
+    </g>
+    ${cor(95, 206, .95)}`
+};
+
+function artSVG(key) {
+  return `<svg viewBox="0 0 400 240" role="img" aria-label="Storybook illustration for this scene">${DEFS}<g filter="url(#wobble)">${ART[key]()}</g></svg>`;
+}
+
+/* ==========================================================
+   GAME LOGIC
+   ========================================================== */
+const app = document.getElementById('app');
+let i = 0, right = 0, wrong = 0, marks = [], missed = [];
+
+const shuffle = a => { a = a.slice(); for (let k = a.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [a[k], a[j]] = [a[j], a[k]]; } return a; };
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+function showTitle() {
+  document.body.className = 'real';
+  app.innerHTML = `<section id="title" class="stage">
+    <svg class="door-art" viewBox="0 0 200 250" aria-hidden="true">
+      <g filter="url(#wobble)">
+        <rect x="20" y="10" width="160" height="220" rx="6" fill="#4a3123" stroke="#22150d" stroke-width="6"/>
+        <polygon class="door-glow" points="100,20 170,30 170,215 100,222" fill="#ffd98a"/>
+        <polygon points="20,10 100,20 100,222 20,230" fill="#6a4630" stroke="#22150d" stroke-width="5"/>
+        <circle cx="86" cy="125" r="11" fill="#0d0d14" stroke="#555" stroke-width="3"/><circle cx="82" cy="121" r="2" fill="#777"/><circle cx="90" cy="121" r="2" fill="#777"/><circle cx="82" cy="129" r="2" fill="#777"/><circle cx="90" cy="129" r="2" fill="#777"/>
+      </g></svg>
+    <h1>Coraline</h1>
+    <div class="sub">The Book Club Quest: Chapters 1 to 4</div>
+    <p>Fifteen moments from the story, and the last few are sneaky. At each one, pick what really happened. If you slip, the book sets you straight and the story carries on the right way.</p>
+    <p>No peeking at the pages. The Other Mother is watching.</p>
+    <button class="go" id="start">Step through the door</button>
+  </section>`;
+  document.getElementById('start').onclick = () => { i = 0; right = 0; wrong = 0; marks = []; missed = []; showScene(); };
+  document.getElementById('start').focus();
+}
+
+function dots() {
+  return `<div id="dots" aria-label="Progress">${SCENES.map((_, k) => {
+    const c = marks[k] === 1 ? 'ok' : marks[k] === 0 ? 'no' : k === i ? 'now' : '';
+    return `<span class="dot ${c}">${marks[k] === 1 ? '\u2713' : marks[k] === 0 ? '\u00d7' : ''}</span>`;
+  }).join('')}</div>`;
+}
+
+function showScene() {
+  const s = SCENES[i];
+  document.body.className = s.world;
+  const order = shuffle([{ t: s.opts[0], ok: true }, { t: s.opts[1], ok: false }]);
+  app.innerHTML = `<section class="stage">
+    ${dots()}
+    <div class="frame">${artSVG(s.art)}</div>
+    <div class="place">${esc(s.place)}</div>
+    <p class="narr">${esc(s.narr)}</p>
+    <div class="question">${esc(s.q)}</div>
+    <div class="opts" role="group" aria-label="Choose an answer">
+      ${order.map((o, n) => `<button class="opt" data-n="${n}"><span class="sew"></span>${esc(o.t)}</button>`).join('')}
+    </div>
+    <div id="out" aria-live="polite"></div>
+  </section>`;
+  const btns = [...app.querySelectorAll('.opt')];
+  btns.forEach((b, n) => b.onclick = () => answer(order, btns, n));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function answer(order, btns, n) {
+  const s = SCENES[i], ok = order[n].ok;
+  btns.forEach((b, k) => { b.disabled = true; if (order[k].ok) b.classList.add('correct'); else if (k === n) b.classList.add('wrong'); else b.classList.add('faded'); });
+  if (ok) { right++; marks[i] = 1; } else { wrong++; marks[i] = 0; missed.push(s); }
+  document.getElementById('dots').outerHTML = dots();
+  const last = i === SCENES.length - 1;
+  document.getElementById('out').innerHTML = `<div class="reveal ${ok ? 'good' : 'bad'}">
+    <h3>${ok ? 'Yes, that is what happened.' : 'Not quite. Here is what really happened:'}</h3>
+    <p>${esc(s.truth)}</p>
+    <button class="go" id="next">${last ? 'See how you did' : 'Continue the story'}</button>
+  </div>`;
+  const nx = document.getElementById('next');
+  nx.onclick = () => { if (last) showEnd(); else { i++; showScene(); } };
+  nx.focus({ preventScroll: true });
+  nx.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function showEnd() {
+  document.body.className = 'other';
+  const rank =
+    right === SCENES.length ? ['Not a single button missed.', 'You read every page. Even the Other Mother could not fool you.'] :
+    right >= 12  ? ['A brave explorer.', 'You noticed nearly everything. Just a detail or two slipped past you.'] :
+    right >= 7   ? ['Wandering in the fog.', 'You caught the big moments but missed a few corners of the house. A little re-reading will help.'] :
+                   ['The Other Mother is pleased.', 'She would love you to keep reading... but perhaps with a bit more attention this time.'];
+  app.innerHTML = `<section id="end" class="stage">
+    <svg viewBox="0 0 400 140" style="width:min(380px,90%)" aria-hidden="true"><g filter="url(#wobble)">
+      ${sparks(10)}${cor(200, 138, 1.1)}
+      <g class="bob"><circle cx="110" cy="60" r="14" fill="#0d0d14" stroke="#6ff2e0" stroke-width="3"/><circle cx="104" cy="56" r="2" fill="#6ff2e0"/><circle cx="116" cy="56" r="2" fill="#6ff2e0"/><circle cx="290" cy="60" r="14" fill="#0d0d14" stroke="#ff9a3d" stroke-width="3"/><circle cx="284" cy="56" r="2" fill="#ff9a3d"/><circle cx="296" cy="56" r="2" fill="#ff9a3d"/></g>
+    </g></svg>
+    <h2>${rank[0]}</h2>
+    <p>${rank[1]}</p>
+    <div class="score">
+      <div class="g"><b>${right}</b>right</div>
+      <div class="r"><b>${wrong}</b>wrong</div>
+    </div>
+    ${missed.length ? `<div id="missed"><h3>Worth another look before the discussion:</h3><ul>${missed.map(m => `<li>${esc(m.place)}</li>`).join('')}</ul></div>` : ''}
+    <button class="go" id="again">Go through the door again</button>
+  </section>`;
+  document.getElementById('again').onclick = showTitle;
+  window.scrollTo({ top: 0 });
+}
+
+/* stop-motion "boil": re-seed the wobble a few times a second */
+const turb = document.getElementById('turb');
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  let seed = 1;
+  setInterval(() => { seed = seed % 7 + 1; turb.setAttribute('seed', seed); }, 170);
+}
+
+showTitle();
+</script>
+</body>
+</html>
